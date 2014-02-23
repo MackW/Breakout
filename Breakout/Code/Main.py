@@ -17,9 +17,6 @@ class Breakout:
     sprBlocks = []
     sprBall = None
     sprBat = None
-    sprBallGroup=pygame.sprite.Group()
-    sprBatGroup=pygame.sprite.Group()
-    sprallgroup = pygame.sprite.Group()
     
     def __init__(self, width=1024,height=768):
         pygame.init()
@@ -34,16 +31,43 @@ class Breakout:
         pygame.mixer.init(freq, bitsize, channels, buffersize)
         pygame.mixer.music.set_volume(0.5)
 
-
     def MainLoop(self):
         pygame.key.set_repeat(1, 1)
         self.background = pygame.Surface(self.screen.get_size())
         self.background = self.background.convert()
         self.background.fill((0,0,0))
+        while 1:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT: 
+                    sys.exit()
+            self.PressSpace() 
+            self.Gameloop()       
+
+    def PressSpace(self):
+        self.screen.fill((0,0,0))
+        font = pygame.font.Font(None, 72)                                                                                        
+        text = font.render("Press Space to Start", 1, (255, 255, 255))                               
+        textpos = text.get_rect(centerx=self.width/2,centery=self.height/2)
+        self.screen.blit(text, textpos)  
+        pygame.display.flip() 
+        exitloop =False
+        while exitloop==False:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT: 
+                    sys.exit()
+                elif event.type == KEYDOWN:
+                    if event.key==K_SPACE:
+                        exitloop=True
+                        
+
+    def Gameloop(self):
+        self.screen.fill((0,0,0))
+        pygame.display.flip()
         #clock=pygame.time.Clock()
         self.LoadSprites()
         self.play_music()
         self.DrawFrame()
+        score=0
         exitloop =False
         while exitloop==False:
             for event in pygame.event.get():
@@ -65,6 +89,18 @@ class Breakout:
             if self.sprBall.checkCollision(self.sprBall, self.sprBat) == True:
                 self.sprBall.ydirection = self.sprBall.ydirection * -1
                 self.sprBall.frameCountToMove =0
+            for iLCa in xrange(len(self.sprBlocks)-1,0,-1):
+                if self.sprBall.checkCollision(self.sprBall, self.sprBlocks[iLCa]) == True:
+                    self.sprBall.ydirection = self.sprBall.ydirection * -1
+                    self.sprBall.frameCountToMove =0
+                    self.screen.fill((0,0,0), self.sprBlocks[iLCa].rect)
+                    score=score+self.sprBlocks[iLCa].score
+                    self.sprBlocks.remove(self.sprBlocks[iLCa])
+            font = pygame.font.Font(None, 24)                                                                                                
+            text = font.render("Score : " + str(score), 1, (255, 255, 255))                               
+            textpos = text.get_rect(x=800,y=5)
+            self.screen.fill((0,0,0), textpos)   
+            self.screen.blit(text, textpos)  
             if self.sprBall.rect.y>740:
                 font = pygame.font.Font(None, 72)                                                                                        
                 text = font.render("Game Over", 1, (0, 255, 0))                               
@@ -74,32 +110,56 @@ class Breakout:
             if pygame.mixer.music.get_busy()==False:
                 self.play_music()
             pygame.display.flip()
-
+        
     def DrawFrame(self):
-        pygame.draw.lines(self.screen, (255, 255, 255), False, [(0,0), (1023,0)], 5)
-        pygame.draw.lines(self.screen, (255, 255, 255), False, [(0,0), (0,767)], 5)
-        pygame.draw.lines(self.screen, (255, 255, 255), False, [(1023,0), (1023,767)], 5)                
+        pygame.draw.lines(self.screen, (255, 255, 255), False, [(0,30), (1023,30)], 5)
+        pygame.draw.lines(self.screen, (255, 255, 255), False, [(0,30), (0,767)], 5)
+        pygame.draw.lines(self.screen, (255, 255, 255), False, [(1023,30), (1023,767)], 5)  
+        for iLCa in range(0,len(self.sprBlocks)):
+            self.screen.blit(self.sprBlocks[iLCa].image, self.sprBlocks[iLCa].rect)
+            
     def LoadSprites(self):
         """Load the sprites that we need"""
         self.sprBat = Bat()
         self.sprBat.rect.centerx=512
         self.sprBat.rect.y=700
-        self.sprBat.groups = self.sprBatGroup,self.sprallgroup
         self.sprBall = Ball()
-        #self.sprBall.rect.centerx=512
-        #self.sprBall.rect.y =683
-        self.sprBall.rect.centerx=450
-        self.sprBall.rect.y =600
-        self.sprBall.setYDirection(1)
-        self.sprBall.groups=self.sprBallGroup,self.sprallgroup
-        
+        self.sprBall.rect.centerx=512
+        self.sprBall.rect.y =683  
+        for iLCa in xrange(0,5):
+            for iLCb in xrange(0,30):
+                sprBlock = Brick()
+                sprBlock.rect.x=4+ iLCb *34
+                sprBlock.rect.y =100+ iLCa *34
+                self.sprBlocks.append(sprBlock)
+   
     def play_music(self):
         filename = os.path.join("Sounds/tune.mid")
-        pygame.mixer.music.load(filename)
-        pygame.mixer.music.play()
+        #pygame.mixer.music.load(filename)
+        #pygame.mixer.music.play()
         pygame.mixer.music.set_volume(0.5)
         
  
+class Brick(pygame.sprite.Sprite):
+
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self) 
+        self.images=[]
+        self.images.append(load_image('Brick-red.png',-1))
+        self.images.append(load_image('Brick-red.png',-1))
+        self.images.append(load_image('Brick-red.png',-1))
+        self.image = self.images[0]
+        self.rect=self.image.get_rect()
+        self.currentFrame=0
+        self.hitCountLeft=1
+        self.score=120
+        
+    def setDirection(self,direction):
+        self.direction=direction
+    def setBrickImageFrame(self,frame):
+        self.currentFrame=frame  
+
+
 class Bat(pygame.sprite.Sprite):
 
     def __init__(self):
@@ -144,7 +204,7 @@ class Ball(pygame.sprite.Sprite):
 
         if (self.rect.x+self.xdirection) <5 or (self.rect.x+self.rect.width+self.xdirection) >1019: 
             self.xdirection=-self.xdirection
-        if (self.rect.y+self.ydirection) <5 or (self.rect.y+self.rect.height+self.ydirection) >768: 
+        if (self.rect.y+self.ydirection) <35 or (self.rect.y+self.rect.height+self.ydirection) >768: 
             self.ydirection=-self.ydirection            
         #self.rect = self.rect.move(xMove,yMove);
         self.rect.move_ip(1*self.xdirection,1*self.ydirection); 

@@ -201,7 +201,7 @@ class Ball(pygame.sprite.Sprite):
         self.frameCountToMove=1
         self.xdirection=1
         self.ydirection=-1
-        self.speed=1
+        self.speed=0
         
     def move(self):
         if self.frameCountToMove>0:

@@ -95,8 +95,8 @@ class Breakout:
         
     def play_music(self):
         filename = os.path.join("Sounds/tune.mid")
-       # pygame.mixer.music.load(filename)
-        #pygame.mixer.music.play()
+        pygame.mixer.music.load(filename)
+        pygame.mixer.music.play()
         pygame.mixer.music.set_volume(0.5)
         
  

@@ -17,7 +17,7 @@ class Breakout:
     sprBlocks = []
     sprBall = None
     sprBat = None
-    
+    highScore =0
     def __init__(self, width=1024,height=768):
         pygame.init()
         self.width = width
@@ -36,20 +36,18 @@ class Breakout:
         self.background = pygame.Surface(self.screen.get_size())
         self.background = self.background.convert()
         self.background.fill((0,0,0))
+        self.PressSpace(True) 
         while 1:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: 
                     sys.exit()
-            self.PressSpace() 
             self.Gameloop()       
-
-    def PressSpace(self):
-        self.screen.fill((0,0,0))
-        font = pygame.font.Font(None, 72)                                                                                        
-        text = font.render("Press Space to Start", 1, (255, 255, 255))                               
-        textpos = text.get_rect(centerx=self.width/2,centery=self.height/2)
-        self.screen.blit(text, textpos)  
-        pygame.display.flip() 
+            self.PressSpace(False) 
+            
+    def PressSpace(self,clearscreen):
+        if clearscreen==True:
+            self.screen.fill((0,0,0))
+        self.DrawText(72, "Press Space to Start",self.width/2,278,(255, 255, 255),True,True, True)                               
         exitloop =False
         while exitloop==False:
             for event in pygame.event.get():
@@ -59,7 +57,6 @@ class Breakout:
                     if event.key==K_SPACE:
                         exitloop=True
                         
-
     def Gameloop(self):
         self.screen.fill((0,0,0))
         pygame.display.flip()
@@ -86,30 +83,35 @@ class Breakout:
             self.screen.fill((0,0,0), self.sprBat.rect)
             self.sprBat.move()
             self.screen.blit(self.sprBat.image, self.sprBat.rect)
-            if self.sprBall.checkCollision(self.sprBall, self.sprBat) == True:
-                self.sprBall.ydirection = self.sprBall.ydirection * -1
+            if check_collision(self.sprBall, self.sprBat) == True:
+                self.sprBall.setYDirection(self.sprBall.ydirection * -1)
                 self.sprBall.frameCountToMove =0
             for iLCa in xrange(len(self.sprBlocks)-1,0,-1):
-                if self.sprBall.checkCollision(self.sprBall, self.sprBlocks[iLCa]) == True:
+                if check_collision(self.sprBall, self.sprBlocks[iLCa]) == True:
                     self.sprBall.setYDirection(self.sprBall.ydirection * -1)
                     self.sprBall.frameCountToMove =0
                     self.screen.fill((0,0,0), self.sprBlocks[iLCa].rect)
                     score=score+self.sprBlocks[iLCa].score
                     self.sprBlocks.remove(self.sprBlocks[iLCa])
-            font = pygame.font.Font(None, 24)                                                                                                
-            text = font.render("Score : " + str(score) + "    ", 1, (255, 255, 255))                               
-            textpos = text.get_rect(x=800,y=5)
-            self.screen.fill((0,0,0), textpos)   
-            self.screen.blit(text, textpos)  
+            self.DrawText(24, "Score : " + str(score) + "    ",800,5,(255,255,255),False,False, False)
             if self.sprBall.rect.y>740:
-                font = pygame.font.Font(None, 72)                                                                                        
-                text = font.render("Game Over", 1, (0, 255, 0))                               
-                textpos = text.get_rect(centerx=self.width/2,centery=278)
-                self.screen.blit(text, textpos)   
+                self.DrawText(72, "Game Over",self.width/2,278,(0,255,0),False,True, True)
                 exitloop=True
             if pygame.mixer.music.get_busy()==False:
                 self.play_music()
             pygame.display.flip()
+    
+    def DrawText(self,fontsize,msg,x,y,colour,overWrite,useCenterX,updatescreen):
+        font = pygame.font.Font(None, fontsize) 
+        text = font.render(msg, 1, colour)   
+        if useCenterX==True:
+            textpos = text.get_rect(centerx=x,centery=y)
+        else:                            
+            textpos = text.get_rect(x=x,y=y)
+        if overWrite==True : self.screen.fill((0,0,0), textpos)   
+        self.screen.blit(text, textpos)
+        if updatescreen==True:
+            pygame.display.flip()  
         
     def DrawFrame(self):
         pygame.draw.lines(self.screen, (255, 255, 255), False, [(0,30), (1023,30)], 5)
@@ -146,6 +148,8 @@ class Breakout:
         #pygame.mixer.music.play()
         pygame.mixer.music.set_volume(0.5)
         
+
+ 
  
 class Brick(pygame.sprite.Sprite):
 
@@ -157,15 +161,15 @@ class Brick(pygame.sprite.Sprite):
         self.images.append(load_image('Brick-red.png',-1))
         self.image = self.images[0]
         self.rect=self.image.get_rect()
+        self.hitmask=get_colorkey_hitmask(self.image, self.rect)
         self.currentFrame=0
         self.hitCountLeft=1
         self.score=120
         
-    def setDirection(self,direction):
-        self.direction=direction
     def setBrickImageFrame(self,frame):
         self.currentFrame=frame
         self.image=self.images[frame]
+        self.hitmask=get_colorkey_hitmask(self.image, self.rect)
 
 
 class Bat(pygame.sprite.Sprite):
@@ -178,17 +182,20 @@ class Bat(pygame.sprite.Sprite):
         self.images.append(load_image('Bat1.png',-1))
         self.image = self.images[0]
         self.rect=self.image.get_rect()
+        self.hitmask=get_colorkey_hitmask(self.image, self.rect)
         self.direction=0
         self.currentFrame=0
     def move(self):
         self.image = self.images[self.currentFrame]
-        if (self.rect.x+self.direction) >5 and (self.rect.x+self.rect.width+self.direction) <1024: 
+        if (self.rect.x+self.direction) >5 and (self.rect.x+self.rect.width+self.direction) <1019: 
             self.rect.move_ip(self.direction*2,0); 
         
     def setDirection(self,direction):
         self.direction=direction
     def setBatImageFrame(self,frame):
-        self.currentFrame=frame  
+        self.currentFrame=frame 
+        self.image = self.images[frame]
+        self.hitmask=get_colorkey_hitmask(self.image, self.rect) 
            
 class Ball(pygame.sprite.Sprite):
 
@@ -198,11 +205,12 @@ class Ball(pygame.sprite.Sprite):
         self.images.append(load_image('Ball.png',-1))
         self.image = self.images[0]
         self.rect=self.image.get_rect()
+        self.hitmask=get_colorkey_hitmask(self.image, self.rect)
         self.frameCountToMove=1
         self.xdirection=1
         self.ydirection=-1
         self.speed=1
-        self.movesbeforenewYdirchange=5
+        self.movesbeforenewYdirchange=15
         
     def move(self):
         if self.frameCountToMove>0:
@@ -222,6 +230,8 @@ class Ball(pygame.sprite.Sprite):
         
     def setBallImageFrame(self,frame):
         self.currentFrame=frame
+        self.image = self.images[frame]
+        self.hitmask=get_colorkey_hitmask(self.image, self.rect)
  
     def setXDirection(self,direction):
         self.xdirection=direction
@@ -229,11 +239,7 @@ class Ball(pygame.sprite.Sprite):
     def setYDirection(self,direction):
         if self.movesbeforenewYdirchange==0:
             self.ydirection=direction
-            self.movesbeforenewYdirchange=5
-        
-    def checkCollision(self,sprite1, sprite2):
-        col = pygame.sprite.collide_rect(sprite1, sprite2)
-        return col    
+            self.movesbeforenewYdirchange=15 
         
 if __name__ == "__main__":
     MainWindow = Breakout()

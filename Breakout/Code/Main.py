@@ -40,22 +40,12 @@ class Breakout:
         self.background = pygame.Surface(self.screen.get_size())
         self.background = self.background.convert()
         self.background.fill((0,0,0))
-        self.DemoMode()
-        while 1:          
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT: 
-                    sys.exit()
-                elif event.type == KEYDOWN:
-                    """if self.KeyPressed(event.key) == 1:"""
-             
-            pygame.display.flip()
-
-    def DemoMode(self):
         #clock=pygame.time.Clock()
         self.LoadSprites()
         self.play_music()
         self.DrawFrame()
-        while 1:
+        exitloop =False
+        while exitloop==False:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: 
                     sys.exit()
@@ -75,9 +65,12 @@ class Breakout:
             if self.sprBall.checkCollision(self.sprBall, self.sprBat) == True:
                 self.sprBall.ydirection = self.sprBall.ydirection * -1
                 self.sprBall.frameCountToMove =0
-                self.screen.fill((0,0,0), self.sprBall.rect)
-                self.sprBall.move()
-                self.screen.blit(self.sprBall.image, self.sprBall.rect)     
+            if self.sprBall.rect.y>740:
+                font = pygame.font.Font(None, 72)                                                                                        
+                text = font.render("Game Over", 1, (0, 255, 0))                               
+                textpos = text.get_rect(centerx=self.width/2,centery=278)
+                self.screen.blit(text, textpos)   
+                exitloop=True
             if pygame.mixer.music.get_busy()==False:
                 self.play_music()
             pygame.display.flip()
@@ -121,7 +114,7 @@ class Bat(pygame.sprite.Sprite):
         self.currentFrame=0
     def move(self):
         self.image = self.images[self.currentFrame]
-        if (self.rect.x+self.direction) >5 and (self.rect.x+self.rect.width+self.direction) <1019: 
+        if (self.rect.x+self.direction) >5 and (self.rect.x+self.rect.width+self.direction) <1024: 
             self.rect.move_ip(self.direction*2,0); 
         
     def setDirection(self,direction):
@@ -149,7 +142,7 @@ class Ball(pygame.sprite.Sprite):
         else:
             self.frameCountToMove = self.speed
 
-        if (self.rect.x+self.xdirection) <5 or (self.rect.x+self.rect.width+self.xdirection) >1024: 
+        if (self.rect.x+self.xdirection) <5 or (self.rect.x+self.rect.width+self.xdirection) >1019: 
             self.xdirection=-self.xdirection
         if (self.rect.y+self.ydirection) <5 or (self.rect.y+self.rect.height+self.ydirection) >768: 
             self.ydirection=-self.ydirection            

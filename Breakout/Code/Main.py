@@ -91,13 +91,13 @@ class Breakout:
                 self.sprBall.frameCountToMove =0
             for iLCa in xrange(len(self.sprBlocks)-1,0,-1):
                 if self.sprBall.checkCollision(self.sprBall, self.sprBlocks[iLCa]) == True:
-                    self.sprBall.ydirection = self.sprBall.ydirection * -1
+                    self.sprBall.setYDirection(self.sprBall.ydirection * -1)
                     self.sprBall.frameCountToMove =0
                     self.screen.fill((0,0,0), self.sprBlocks[iLCa].rect)
                     score=score+self.sprBlocks[iLCa].score
                     self.sprBlocks.remove(self.sprBlocks[iLCa])
             font = pygame.font.Font(None, 24)                                                                                                
-            text = font.render("Score : " + str(score), 1, (255, 255, 255))                               
+            text = font.render("Score : " + str(score) + "    ", 1, (255, 255, 255))                               
             textpos = text.get_rect(x=800,y=5)
             self.screen.fill((0,0,0), textpos)   
             self.screen.blit(text, textpos)  
@@ -201,7 +201,8 @@ class Ball(pygame.sprite.Sprite):
         self.frameCountToMove=1
         self.xdirection=1
         self.ydirection=-1
-        self.speed=0
+        self.speed=1
+        self.movesbeforenewYdirchange=5
         
     def move(self):
         if self.frameCountToMove>0:
@@ -209,7 +210,9 @@ class Ball(pygame.sprite.Sprite):
             return
         else:
             self.frameCountToMove = self.speed
-
+        if self.movesbeforenewYdirchange>0:
+            self.movesbeforenewYdirchange=self.movesbeforenewYdirchange-1
+            
         if (self.rect.x+self.xdirection) <5 or (self.rect.x+self.rect.width+self.xdirection) >1019: 
             self.xdirection=-self.xdirection
         if (self.rect.y+self.ydirection) <35 or (self.rect.y+self.rect.height+self.ydirection) >768: 
@@ -224,7 +227,9 @@ class Ball(pygame.sprite.Sprite):
         self.xdirection=direction
         
     def setYDirection(self,direction):
-        self.ydirection=direction
+        if self.movesbeforenewYdirchange==0:
+            self.ydirection=direction
+            self.movesbeforenewYdirchange=5
         
     def checkCollision(self,sprite1, sprite2):
         col = pygame.sprite.collide_rect(sprite1, sprite2)

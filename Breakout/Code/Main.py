@@ -127,10 +127,17 @@ class Breakout:
         self.sprBall.rect.centerx=512
         self.sprBall.rect.y =683  
         for iLCa in xrange(0,5):
+            colour=0
+            score=40
+            if iLCa<2:
+                colour=1
+                score=80
             for iLCb in xrange(0,30):
                 sprBlock = Brick()
                 sprBlock.rect.x=4+ iLCb *34
                 sprBlock.rect.y =100+ iLCa *34
+                sprBlock.score=score
+                sprBlock.setBrickImageFrame(colour)
                 self.sprBlocks.append(sprBlock)
    
     def play_music(self):
@@ -146,7 +153,7 @@ class Brick(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self) 
         self.images=[]
         self.images.append(load_image('Brick-red.png',-1))
-        self.images.append(load_image('Brick-red.png',-1))
+        self.images.append(load_image('Brick-purple.png',-1))
         self.images.append(load_image('Brick-red.png',-1))
         self.image = self.images[0]
         self.rect=self.image.get_rect()
@@ -157,7 +164,8 @@ class Brick(pygame.sprite.Sprite):
     def setDirection(self,direction):
         self.direction=direction
     def setBrickImageFrame(self,frame):
-        self.currentFrame=frame  
+        self.currentFrame=frame
+        self.image=self.images[frame]
 
 
 class Bat(pygame.sprite.Sprite):

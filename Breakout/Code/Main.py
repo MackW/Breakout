@@ -47,7 +47,7 @@ class Breakout:
     def PressSpace(self,clearscreen):
         if clearscreen==True:
             self.screen.fill((0,0,0))
-        self.DrawText(72, "Press Space to Start",self.width/2,278,(255, 255, 255),False,True, True)                               
+        self.DrawText(72, "Press Space to Start",self.width/2,self.height/2,(255, 255, 255),False,True, True)                               
         exitloop =False
         while exitloop==False:
             for event in pygame.event.get():

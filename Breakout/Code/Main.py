@@ -47,7 +47,7 @@ class Breakout:
     def PressSpace(self,clearscreen):
         if clearscreen==True:
             self.screen.fill((0,0,0))
-        self.DrawText(72, "Press Space to Start",self.width/2,278,(255, 255, 255),True,True, True)                               
+        self.DrawText(72, "Press Space to Start",self.width/2,278,(255, 255, 255),False,True, True)                               
         exitloop =False
         while exitloop==False:
             for event in pygame.event.get():
@@ -93,7 +93,7 @@ class Breakout:
                     self.screen.fill((0,0,0), self.sprBlocks[iLCa].rect)
                     score=score+self.sprBlocks[iLCa].score
                     self.sprBlocks.remove(self.sprBlocks[iLCa])
-            self.DrawText(24, "Score : " + str(score) + "    ",800,5,(255,255,255),False,False, False)
+            self.DrawText(24, "Score : " + str(score) + "    ",800,5,(255,255,255),True,False, False)
             if self.sprBall.rect.y>740:
                 self.DrawText(72, "Game Over",self.width/2,278,(0,255,0),False,True, True)
                 exitloop=True

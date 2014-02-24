@@ -58,6 +58,7 @@ class Breakout:
                         exitloop=True
                         
     def Gameloop(self):
+        clock=pygame.time.Clock()
         self.screen.fill((0,0,0))
         pygame.display.flip()
         #clock=pygame.time.Clock()
@@ -100,6 +101,7 @@ class Breakout:
             if pygame.mixer.music.get_busy()==False:
                 self.play_music()
             pygame.display.flip()
+            clock.tick(50)
     
     def DrawText(self,fontsize,msg,x,y,colour,overWrite,useCenterX,updatescreen):
         font = pygame.font.Font(None, fontsize) 
@@ -185,10 +187,11 @@ class Bat(pygame.sprite.Sprite):
         self.hitmask=get_colorkey_hitmask(self.image, self.rect)
         self.direction=0
         self.currentFrame=0
+        self.multiplier=5
     def move(self):
         self.image = self.images[self.currentFrame]
-        if (self.rect.x+self.direction) >5 and (self.rect.x+self.rect.width+self.direction) <1019: 
-            self.rect.move_ip(self.direction*2,0); 
+        if (self.rect.x+self.direction*self.multiplier) >5 and (self.rect.x+self.rect.width+self.direction*self.multiplier) <1019: 
+            self.rect.move_ip(self.direction*self.multiplier,0); 
         
     def setDirection(self,direction):
         self.direction=direction
@@ -206,10 +209,10 @@ class Ball(pygame.sprite.Sprite):
         self.image = self.images[0]
         self.rect=self.image.get_rect()
         self.hitmask=get_colorkey_hitmask(self.image, self.rect)
-        self.frameCountToMove=1
-        self.xdirection=1
-        self.ydirection=-1
-        self.speed=1
+        self.frameCountToMove=0
+        self.xdirection=3
+        self.ydirection=-3
+        self.speed=0
         self.movesbeforenewYdirchange=15
         
     def move(self):

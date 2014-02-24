@@ -38,3 +38,4 @@ def check_collision(obj1,obj2):
             if hm1[x1+x][y1+y] and hm2[x2+x][y2+y]:return True
             else:continue
     return False
+
